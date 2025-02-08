@@ -1,5 +1,5 @@
 # T41VS1053
-  This is a library to use the Adafruit's VS1053 with Teensy4.1 (maybe others VS1053. Not tested!!)
+  This is a library for Teensy4.1 + Adafruit's VS1053 (maybe others VS1053. Don't know. Not tested!!)
   
   It uses interrupt by default.
 
