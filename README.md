@@ -13,6 +13,9 @@
   - [Teensy4.1](https://www.pjrc.com/store/teensy41.html)
   - [Adafruit's "Music Maker" MP3 Shield for Arduino (MP3/Ogg/WAV...)](https://www.adafruit.com/product/1790)
 
+  ### Documentation
+  - [VS1053b Datasheet](https://github.com/pere-gr/T41VS1053/tree/main/docs) v1.20 ( Dec 03, 2012)
+
 # I want to... (asap)
   - add new functionality 
   - i2s ??
