@@ -48,7 +48,7 @@ void loop() {
     // Just give the name. The library will open the file and play it!
     //vs.play("file.mp3"); // When useInterrupt, plays in background. Otherwise, play the full file then stops
 
-    // Open the file and play it!
+    // Open the file and play it! You can use SdFat or whatever you prefer ;)
     trackFile = SD.open("file.mp3");
     vs.play(trackFile); // When useInterrupt, plays in background. Otherwise, play the full file then stops
   }
