@@ -12,6 +12,7 @@
 #include "T41VS1053.h"
 
 T41VS1053 vs; 
+File trackFile;
 
 // the setup routine runs once when you press reset:
 void setup() {
@@ -41,19 +42,17 @@ void setup() {
 
 // the loop routine runs over and over again forever:
 void loop() {
-  File trackFile;
-
   if (!vs.isStopped()) { 
     Serial.print(F("Playing... "));
     Serial.println(vs.getTrackName());   
   } else {
     Serial.println(F("Nothing playing"));
-    //Let's play the file ... and again, and again, and again...
+    // Just give the name. The library will open the file and play it!
     //vs.play("file.mp3"); // When useInterrupt, plays in background. Otherwise, play the full file then stops
 
     // Open the file and play it!
     trackFile = SD.open("file.mp3");
-    vs.play(trackFile);
+    vs.play(trackFile); // When useInterrupt, plays in background. Otherwise, play the full file then stops
   }
 
   delay(5000);
