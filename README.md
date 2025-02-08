@@ -3,6 +3,7 @@
   
   It uses interrupt by default.
 
+  Take a look into [HowToUse](https://github.com/pere-gr/pgr-teensy41-vs1053/tree/main/examples/HowToUse) to get an idea.
 
   Based on:
   - Adafruit's [VS1053 library](https://github.com/adafruit/Adafruit_VS1053_Library)
