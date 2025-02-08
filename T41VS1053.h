@@ -90,9 +90,10 @@ public:
   boolean isPlaying(void);
   boolean isStopped(void);
   void pause(boolean pause);
+  boolean play(File trackFile);
   boolean play(const char *trackname);
-  boolean playFullFile(const char *trackname);
-  boolean playBackground(const char *trackname);
+  boolean playFullFile(void);
+  boolean playBackground(void);
   void reset(void);
   void setVolume(uint8_t left, uint8_t right);
   void softReset(void);
