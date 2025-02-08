@@ -1,4 +1,17 @@
+/*************************************************** 
+  This is a library to use the Adafruit's VS1053 with Teensy4.1 (maybe others VS1053. Not tested!!)
 
+  Based on:
+    - Adafruit's https://github.com/adafruit/Adafruit_VS1053_Library
+    - TobiasVanDyk's https://github.com/TobiasVanDyk/VS1053B-Teensy36-Teensy41-SDCard-Music-Player
+
+  Hardware tested:
+    - Teensy4.1 https://www.pjrc.com/store/teensy41.html
+    - Adafruit's "Music Maker" MP3 Shield for Arduino (MP3/Ogg/WAV...) https://www.adafruit.com/product/1790
+
+  PereGR - Feb 2025
+
+ ****************************************************/
 
 #define VS1053_CONTROL_SPI_SETTING SPISettings(250000, MSBFIRST, SPI_MODE0)  // 2.5 MHz SPI speed Control
 #define VS1053_DATA_SPI_SETTING SPISettings(8000000, MSBFIRST, SPI_MODE0)    // 8 MHz SPI speed Data
@@ -9,18 +22,22 @@
 
 //Just to be able to use feedBuffer in an interrupt
 static T41VS1053 *myself;
-static void feeder(void) {
-  myself->feedBuffer();
-}
+volatile boolean feedBufferLock = false;  //!< Locks feeding the buffer
+static void feeder(void) { myself->feedBuffer(); }
 
 ////////////////////////////////////////////////////////////////
 // Configure interrupt for Data XDREQ from vs1053
 // XDREQ is low while the receive buffer is full
 ////////////////////////////////////////////////////////////////
-void T41VS1053::interrupt(void) {
-  SPI.usingInterrupt(XDREQ);               // Disable Interrupt during SPI transactions
+void T41VS1053::useInterrupt(void) {
+  myself = this;
+
+  pinMode(XDREQ, INPUT);
+  SPI.usingInterrupt(XDREQ);  // Disable Interrupt during SPI transactions
   attachInterrupt(XDREQ, feeder, CHANGE);  // Interrupt on Pin XDREQ state change
-}  // feeder->feedBuffer executed (lines 26, 209)
+  hasInt = true;
+  return;
+}
 
 //////////////////////////////////////////////////////////
 // Set the card to be disabled while we get the vs1053 up
@@ -34,8 +51,19 @@ void T41VS1053::disableCard(void) {
 /////////////////////////////////////////////////////////////////////////
 // Play file without interrupts
 /////////////////////////////////////////////////////////////////////////
+boolean T41VS1053::play(const char *trackname) {
+  if (hasInt) {
+    Serial.println(F("Play in background..."));
+    return playBackground(trackname);
+  }
+  Serial.println(F("Play and wait it ends"));
+  return playFullFile(trackname);
+}
+/////////////////////////////////////////////////////////////////////////
+// Play file without interrupts
+/////////////////////////////////////////////////////////////////////////
 boolean T41VS1053::playFullFile(const char *trackname) {
-  if (!startPlayingFile(trackname)) return false;
+  if (!playBackground(trackname)) return false;
   while (playingMusic) { feedBuffer(); }
   return true;
 }
@@ -60,13 +88,17 @@ boolean T41VS1053::isPaused(void) {
   return (!playingMusic && currentTrack);
 }
 
+boolean T41VS1053::isPlaying(void) {
+  return !isStopped();
+}
+
 ////////////////////////
 boolean T41VS1053::isStopped(void) {
   return (!playingMusic && !currentTrack);
 }
 
 //////////////////////////////////////////////////////
-boolean T41VS1053::startPlayingFile(const char *trackname) {
+boolean T41VS1053::playBackground(const char *trackname) {
   currentTrack = SD.open(trackname);
   if (!currentTrack) { return false; }
   playingMusic = true;
@@ -80,35 +112,58 @@ boolean T41VS1053::startPlayingFile(const char *trackname) {
 // XDREQ is low while the receive buffer is full
 ///////////////////////////////////////////////////
 void T41VS1053::feedBuffer(void) {
-  myself = this;  // oy vey
-
-  static uint8_t running = 0;
-  uint8_t sregsave;
-
-  // Do not allow 2 FeedBuffer instances to run concurrently
   noInterrupts();
-  // paused or stopped. no SDCard track open, XDREQ=0 receive buffer full
-  if ((!playingMusic) || (!currentTrack) || (!isReadyForData())) {
-    running = 0;
+  // dont run twice in case interrupts collided
+  // This isn't a perfect lock as it may lose one feedBuffer request if
+  // an interrupt occurs before feedBufferLock is reset to false. This
+  // may cause a glitch in the audio but at least it will not corrupt
+  // state.
+  if (feedBufferLock) {
+    interrupts();
     return;
   }
-
+  feedBufferLock = true;
   interrupts();
 
-  // Send buffer
+  feedBuffer_noLock();
+
+  feedBufferLock = false;
+}
+
+void T41VS1053::feedBuffer_noLock(void) {
+  if ((!playingMusic)  // paused or stopped
+      || (!currentTrack) || (!isReadyForData())) {
+    return;  // paused or stopped
+  }
+
+  // Feed the hungry buffer! :)
   while (isReadyForData()) {
+    // Read some audio data from the SD card file
     int bytesread = currentTrack.read(SoundBuffer, VS1053_DATABUFFERLEN);
-    if (bytesread == 0)  // End of File
-    {
+
+    if (bytesread == 0) {
+      // must be at the end of the file
+      /*if (_loopPlayback) {
+        // play in loop
+        if (isMP3File(currentTrack.name())) {
+          currentTrack.seek(mp3_ID3Jumper(currentTrack));
+        } else {
+          currentTrack.seek(0);
+        }
+      } else {
+        // wrap it up!
+        playingMusic = false;
+        currentTrack.close();
+        break;
+      }*/
+
       playingMusic = false;
       currentTrack.close();
-      running = 0;
-      return;
+      break;
     }
+
     playData(SoundBuffer, bytesread);
   }
-  running = 0;
-  return;
 }
 
 ////////////////////////////////////////////////////
@@ -139,6 +194,10 @@ void T41VS1053::setVolume(uint8_t left, uint8_t right) {
   cli();
   sciWrite(VS1053_REG_VOLUME, v);
   sei();
+}
+
+char *T41VS1053::trackName(void){
+  return (char*)currentTrack.name();
 }
 
 ////////////////////////////
@@ -175,6 +234,7 @@ void T41VS1053::reset(void) {
 
 //////////////////////
 uint8_t T41VS1053::begin(void) {
+  uint8_t isInit;
   if (XRST >= 0) {
     pinMode(XRST, OUTPUT);  // if reset = -1 ignore
     digitalWrite(XRST, LOW);
@@ -184,16 +244,18 @@ uint8_t T41VS1053::begin(void) {
   digitalWrite(XCS, HIGH);
   pinMode(XDCS, OUTPUT);
   digitalWrite(XDCS, HIGH);
-  pinMode(XDREQ, INPUT);
+
 
   SPI.begin();
-  SPI.setDataMode(SPI_MODE0);
+  /*SPI.setDataMode(SPI_MODE0);
   SPI.setBitOrder(MSBFIRST);
-  SPI.setClockDivider(SPI_CLOCK_DIV128);
+  SPI.setClockDivider(SPI_CLOCK_DIV128);*/
 
   reset();
+  isInit = (sciRead(VS1053_REG_STATUS) >> 4) & 0x0F;
 
-  return (sciRead(VS1053_REG_STATUS) >> 4) & 0x0F;
+  interrupts();
+  return isInit;
 }
 
 /////////////////////////////////////
