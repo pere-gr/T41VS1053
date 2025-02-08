@@ -1,11 +1,15 @@
 /*************************************************** 
-  This is a library to use the Adafruit VS1053 with Teensy4.1
+  This is a library to use the Adafruit's VS1053 with Teensy4.1 (maybe others VS1053. Not tested!!)
 
   Based on:
     - Adafruit's https://github.com/adafruit/Adafruit_VS1053_Library
     - TobiasVanDyk's https://github.com/TobiasVanDyk/VS1053B-Teensy36-Teensy41-SDCard-Music-Player
 
-  PereGr - Feb 2025
+  Hardware tested:
+    - Teensy4.1 https://www.pjrc.com/store/teensy41.html
+    - Adafruit's "Music Maker" MP3 Shield for Arduino (MP3/Ogg/WAV...) https://www.adafruit.com/product/1790
+
+  PereGR - Feb 2025
 
  ****************************************************/
 #include <Arduino.h>
@@ -28,7 +32,7 @@
 
 
 #define VS1053_FILEPLAYER_TIMER0_INT 255  //!< Allows useInterrupt to accept pins 0 to 254
-#define VS1053_FILEPLAYER_PIN_INT 5       //!< Allows useInterrupt to accept pins 0 to 4
+#define VS1053_FILEPLAYER_PIN_INT 3      //!< Allows useInterrupt to accept pins 0 to 254
 
 #define VS1053_SCI_READ 0x03   //!< Serial read address
 #define VS1053_SCI_WRITE 0x02  //!< Serial write address
@@ -83,27 +87,35 @@ class T41VS1053 {
 public:
   uint8_t begin(void);
   boolean isPaused(void);
+  boolean isPlaying(void);
   boolean isStopped(void);
   void pause(boolean pause);
+  boolean play(const char *trackname);
   boolean playFullFile(const char *trackname);
+  boolean playBackground(const char *trackname);
   void reset(void);
   void setVolume(uint8_t left, uint8_t right);
   void softReset(void);
   void stop(void);
-//private:
-  File currentTrack;
-  boolean playingMusic;
-  uint8_t SoundBuffer[VS1053_DATABUFFERLEN];
+  char *trackName();
+  void useInterrupt(void);
 
+  //////////////////////////////////////////////
+  // You're not going to use it normally      //
+  //////////////////////////////////////////////
   uint16_t decodeTime(void);
   void disableCard(void);
   void feedBuffer(void);
-  void interrupt(void);
+  void feedBuffer_noLock(void);
   boolean isReadyForData(void);
   void playData(uint8_t *buffer, uint8_t buffsiz);
   uint16_t sciRead(uint8_t addr);
   void sciWrite(uint8_t addr, uint16_t data);
   uint8_t spiRead(void);
   void spiWrite(uint8_t c);
-  boolean startPlayingFile(const char *trackname);
+
+  File currentTrack;
+  boolean hasInt = false;
+  boolean playingMusic;
+  uint8_t SoundBuffer[VS1053_DATABUFFERLEN];
 };
