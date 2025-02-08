@@ -41,13 +41,19 @@ void setup() {
 
 // the loop routine runs over and over again forever:
 void loop() {
+  File trackFile;
+
   if (!vs.isStopped()) { 
     Serial.print(F("Playing... "));
-    Serial.println(vs.trackName());
+    Serial.println(vs.getTrackName());   
   } else {
     Serial.println(F("Nothing playing"));
     //Let's play the file ... and again, and again, and again...
-    vs.play("file.mp3"); // When useInterrupt, plays in background. Otherwise, play the full file then stops
+    //vs.play("file.mp3"); // When useInterrupt, plays in background. Otherwise, play the full file then stops
+
+    // Open the file and play it!
+    trackFile = SD.open("file.mp3");
+    vs.play(trackFile);
   }
 
   delay(5000);
