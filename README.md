@@ -13,4 +13,9 @@
   - [Teensy4.1](https://www.pjrc.com/store/teensy41.html)
   - [Adafruit's "Music Maker" MP3 Shield for Arduino (MP3/Ogg/WAV...)](https://www.adafruit.com/product/1790)
 
+  ###I want to... (asap)
+  - add new functionality 
+  - i2s ??
+
+  
   PereGR - Feb 2025
