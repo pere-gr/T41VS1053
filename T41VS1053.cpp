@@ -17,7 +17,7 @@
 #define VS1053_DATA_SPI_SETTING SPISettings(8000000, MSBFIRST, SPI_MODE0)    // 8 MHz SPI speed Data
 
 
-#include "pgr_teensy41_vs1053.h"
+#include "T41VS1053.h"
 
 
 //Just to be able to use feedBuffer in an interrupt

@@ -9,7 +9,7 @@
 
 */
 
-#include "pgr_teensy41_vs1053.h"
+#include "T41VS1053.h"
 
 T41VS1053 vs; 
 
