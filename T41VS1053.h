@@ -32,7 +32,7 @@
 
 
 #define VS1053_FILEPLAYER_TIMER0_INT 255  //!< Allows useInterrupt to accept pins 0 to 254
-#define VS1053_FILEPLAYER_PIN_INT 3      //!< Allows useInterrupt to accept pins 0 to 254
+#define VS1053_FILEPLAYER_PIN_INT 3      //!< Allows useInterrupt to accept pins 0 to 5
 
 #define VS1053_SCI_READ 0x03   //!< Serial read address
 #define VS1053_SCI_WRITE 0x02  //!< Serial write address
@@ -86,30 +86,33 @@
 class T41VS1053 {
 public:
   uint8_t begin(void);
+  uint16_t T41VS1053::getPlaySpeed(void);
+  char *getTrackName(void);
   boolean isPaused(void);
   boolean isPlaying(void);
   boolean isStopped(void);
   void pause(boolean pause);
-  boolean play(File trackFile);
+  boolean play(File& trackFile);
   boolean play(const char *trackname);
-  boolean playFullFile(void);
-  boolean playBackground(void);
   void reset(void);
+  void T41VS1053::setPlaySpeed(uint16_t speed);
+  void setVolume(uint8_t vol);
   void setVolume(uint8_t left, uint8_t right);
   void softReset(void);
   void stop(void);
-  char *trackName();
   void useInterrupt(void);
 
   //////////////////////////////////////////////
-  // You're not going to use it normally      //
+  // You're not going to use them normally      //
   //////////////////////////////////////////////
   uint16_t decodeTime(void);
   void disableCard(void);
   void feedBuffer(void);
   void feedBuffer_noLock(void);
   boolean isReadyForData(void);
+  boolean playBackground(void);  
   void playData(uint8_t *buffer, uint8_t buffsiz);
+  boolean playFullFile(void);
   uint16_t sciRead(uint8_t addr);
   void sciWrite(uint8_t addr, uint16_t data);
   uint8_t spiRead(void);

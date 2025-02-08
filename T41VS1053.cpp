@@ -106,6 +106,18 @@ void T41VS1053::feedBuffer_noLock(void) {
   }
 }
 
+uint16_t T41VS1053::getPlaySpeed(void) {
+  noInterrupts();
+  sciWrite(VS1053_SCI_WRAMADDR, VS1053_PARA_PLAYSPEED);
+  uint16_t speed = sciRead(VS1053_SCI_WRAM);
+  interrupts();
+  return speed;
+}
+
+char *T41VS1053::getTrackName(void){
+  return (char*)currentTrack.name();
+}
+
 boolean T41VS1053::isPaused(void) {
   return (!playingMusic && currentTrack);
 }
@@ -135,6 +147,7 @@ void T41VS1053::pause(boolean pause) {
 
 // Play a file 
 boolean T41VS1053::play(File& trackFile) {
+  if (isPlaying()) stop();
   currentTrack = trackFile;
   if (!currentTrack) { return false; }
 
@@ -148,6 +161,8 @@ boolean T41VS1053::play(File& trackFile) {
 
 // Opens and Play a file 
 boolean T41VS1053::play(const char *trackName) {
+  if (isPlaying()) stop();
+
   currentTrack = SD.open(trackName);
   if (!currentTrack) { return false; }
 
@@ -228,8 +243,17 @@ void T41VS1053::sciWrite(uint8_t addr, uint16_t data) {
   SPI.endTransaction();
 }
 
-/*static volatile uint8_t *clkportreg;
-static uint8_t clkpin;*/
+void T41VS1053::setPlaySpeed(uint16_t speed) {
+  if (speed < 1 || speed > 4) speed = 1;
+  noInterrupts();
+  sciWrite(VS1053_SCI_WRAMADDR, VS1053_PARA_PLAYSPEED);
+  sciWrite(VS1053_SCI_WRAM, speed);
+  interrupts();
+}
+
+void T41VS1053::setVolume(uint8_t vol) {
+  setVolume(vol,vol);
+}
 
 void T41VS1053::setVolume(uint8_t left, uint8_t right) {
   uint16_t v;
@@ -272,10 +296,6 @@ void T41VS1053::spiWrite(uint8_t c) {  // MSB first, clock low when inactive (CP
 void T41VS1053::stop(void) {
   playingMusic = false;
   currentTrack.close();
-}
-
-char *T41VS1053::trackName(void){
-  return (char*)currentTrack.name();
 }
 
 ////////////////////////////////////////////////////////////////
