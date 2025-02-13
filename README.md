@@ -1,4 +1,4 @@
-# T41VS1053
+# [T41VS1053](https://github.com/pere-gr/T41VS1053)
   This is a library for Teensy4.1 + Adafruit's VS1053 (maybe others VS1053. Don't know. Not tested!!)
   
   It uses interrupt by default.
