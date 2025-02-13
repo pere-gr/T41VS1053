@@ -1,5 +1,5 @@
 # [T41VS1053](https://github.com/pere-gr/T41VS1053)
-  This is a library for Teensy4.1 + Adafruit's VS1053 (maybe others VS1053. Don't know. Not tested!!)
+  This is a library for Teensy 4.1 + Adafruit's VS1053 (maybe others VS1053. Don't know. Not tested!!)
   
   It uses interrupt by default.
 
@@ -10,7 +10,7 @@
   - TobiasVanDyk's [VS1053B-Teensy36-Teensy41-SDCard-Music-Player](https://github.com/TobiasVanDyk/VS1053B-Teensy36-Teensy41-SDCard-Music-Player)
 
   ### Hardware tested:
-  - [Teensy4.1](https://www.pjrc.com/store/teensy41.html)
+  - [Teensy 4.1](https://www.pjrc.com/store/teensy41.html)
   - [Adafruit's "Music Maker" MP3 Shield for Arduino (MP3/Ogg/WAV...)](https://www.adafruit.com/product/1790)
 
   ### Documentation
