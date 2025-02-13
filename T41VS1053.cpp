@@ -152,10 +152,10 @@ boolean T41VS1053::play(File& trackFile) {
   if (!currentTrack) { return false; }
 
   if (hasInt) {
-    Serial.println(F("Play in background..."));
+    //Serial.println(F("Play in background..."));
     return playBackground();
   }
-  Serial.println(F("Play and wait it ends"));
+  //Serial.println(F("Play and wait it ends"));
   return playFullFile();
 }
 
@@ -167,10 +167,10 @@ boolean T41VS1053::play(const char *trackName) {
   if (!currentTrack) { return false; }
 
   if (hasInt) {
-    Serial.println(F("Play in background..."));
+    //Serial.println(F("Play in background..."));
     return playBackground();
   }
-  Serial.println(F("Play and wait it ends"));
+  //Serial.println(F("Play and wait it ends"));
   return playFullFile();
 }
 
